@@ -2,7 +2,6 @@ package by.kate.paulich;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,48 +19,54 @@ class Sort {
 
         for (int line =0; line< list.size(); line++){
             List<String[]> listForSort = new ArrayList<String[]>();
-            if (line == list.size() -1){
+            if (line == list.size() - 1) {
                 listResult.add(list.get(line));
                 break;
             }
-            if(indexColumn == list.get(line).length){
+            if (list.get(line).length == 1 || list.get(line+1).length == 1){
                 listResult.add(list.get(line));
-            }else {
-                boolean isEquels = false;
-                int newLine = line;
-                while (list.get(newLine)[indexColumn].equals(list.get(newLine +1)[indexColumn])){
-                    listForSort.add(list.get(newLine));
-                    newLine++;
-                    isEquels = true;
-                    //выход из while
-                    if (newLine == list.size() - 1){
-                        break;
-                    }
+            }else
+                if (indexColumn == list.get(line).length) {
+                listResult.add(list.get(line));
+                } else {
+                    boolean isEquels = false;
+                    int newLine = line;
+                    while (list.get(newLine)[indexColumn].equals(list.get(newLine + 1)[indexColumn])) {
+                        listForSort.add(list.get(newLine));
+                        newLine++;
+                        isEquels = true;
+                        //выход из while
+                        if (newLine == list.size() - 1) {
+                            break;
+                        }
                 }
                 line = newLine;
-                if (isEquels){
+                if (isEquels) {
                     listForSort.add(list.get(line));
                     int newIndexColumn = indexColumn + 1;
                     this.sort(listForSort, newIndexColumn);
-                }else
+                } else
                     listResult.add(list.get(line));
             }
         }
+
         return listResult;
     }
-
 
     // разделяем строки и цифры
     private List<String[]> splitNumberString(List<String[]> listStr, int indexColumn){
 
         List<String[]> listNumber = new ArrayList<String[]>();
         List<String[]> listString = new ArrayList<String[]>();
+        List<String[]> listEmpty = new ArrayList<String[]>();
         List<String[]> list1;
         List<String[]> list2;
         List<String[]> mainList = new ArrayList<String[]>();
 
         for (String[] aListStr : listStr) {
-            if (indexColumn == aListStr.length ){
+            if (aListStr.length == 1){
+                listEmpty.add(aListStr);
+            }else if (indexColumn == aListStr.length ){
                 mainList.add(aListStr);
             }else {
                 Matcher regexp1 = pattern1.matcher(aListStr[indexColumn]);
@@ -79,24 +84,32 @@ class Sort {
         list1 = sortNumber(listNumber, indexColumn);
         list2 = sortString(listString, indexColumn);
         mainList.addAll(list1);
+        mainList.addAll(listEmpty);
         mainList.addAll(list2);
         return mainList;
     }
 
     // сортировка цифр
     private List<String[]> sortNumber(List<String[]> listNumber, int indexColumn){
-        boolean needIteration = true;
 
-        while (needIteration) {
-            needIteration = false;
-            for (int j=1; j< listNumber.size(); j++) {
-                if (Double.parseDouble(listNumber.get(j)[indexColumn]) < Double.parseDouble(listNumber.get(j - 1)[indexColumn])) {
-                    Collections.swap(listNumber, j - 1, j);
-                    needIteration = true;
+        List<String[]> listNumberSort = new ArrayList<String[]>();
+        Double[] strings = new Double[listNumber.size()];
+
+        for (int j=0; j< listNumber.size(); j++){
+            strings[j] = Double.valueOf(listNumber.get(j)[indexColumn]);
+        }
+
+        Arrays.sort(strings);
+        for (Double string : strings) {
+            for (int k = 0; k < listNumber.size(); k++) {
+                if (string.equals(Double.valueOf(listNumber.get(k)[indexColumn]))) {
+                    listNumberSort.add(listNumber.get(k));
+                    listNumber.remove(listNumber.get(k));
+                    break;
                 }
             }
         }
-        return listNumber;
+        return listNumberSort;
     }
 
     //сортировка строк
